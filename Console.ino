@@ -4,9 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "AiEsp32RotaryEncoder.h"
-#include "pitches.h"
 #include <credentials.h>
-#define BUZZZER_PIN  18 // ESP32 pin GPIO18 connected to piezo buzzer
 
 // Display
 
@@ -49,33 +47,31 @@ void rotary_onButtonClick() {
   Serial.print(millis());
   Serial.println(" milliseconds after restart");
 }
-bool longHold=false;
+bool longHold = false;
 void rotary_loop(Console* console) {
   //dont print anything unless value changed
   if (rotaryEncoder.encoderChanged()) {
     Serial.print("Value: ");
     Serial.println(rotaryEncoder.readEncoder());
     printToDisplay(toString(rotaryEncoder.readEncoder()));
-    if (rotaryEncoder.readEncoder()>500){
+    if (rotaryEncoder.readEncoder() > 500) {
       console->handleRight();
-    }else if (rotaryEncoder.readEncoder()<500){
+    } else if (rotaryEncoder.readEncoder() < 500) {
       console->handleLeft();
     }
     rotaryEncoder.setEncoderValue(500);
   }
   if (rotaryEncoder.isEncoderButtonClicked() && !rotaryEncoder.isEncoderButtonDown()) {
-    if(longHold){
-      longHold=false;
+    if (longHold) {
+      longHold = false;
       return;
     }
     rotary_onButtonClick();
     printToDisplay("button clicked");
     console->handleOk();
     //  beep();
-
   }
-  if (rotaryEncoder.isEncoderButtonDown()){
-
+  if (rotaryEncoder.isEncoderButtonDown()) {
   }
 }
 
@@ -99,10 +95,15 @@ void wifiSetup() {
   Serial.println("");
 
   // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  for (int i = 0; i < 10; i++) {
+    if (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    } else {
+      break;
+    }
   }
+  //console.isWifiConnected(WiFi.status()==WL_CONNECTED);
   Serial.println("");
   Serial.print("Connected to ");
   Serial.println(ssid);
@@ -145,105 +146,134 @@ void displaySetup() {
 Console* console;
 void setup(void) {
   Serial.begin(115200);
+  cout<<"starting setup \n";
+  console = setupConsole();
   displaySetup();
   wifiSetup();
   encoderSetup();
-  console = setupConsole();
-  beepSmall();
+  // beepSmall();
 }
-void printClear(){
+void printClear() {
   display.clearDisplay();
 };
-void printPre(){
+void printPre() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
 };
-void beep(){
-    tone(BUZZZER_PIN, NOTE_C4 , 400);
-}
-void beepSmall(){
-      tone(BUZZZER_PIN, NOTE_C4 , 50);
-}
-void printDisplayLine(DisplayLine line){
+// void beep(){
+//     tone(BUZZZER_PIN, NOTE_C4 , 400);
+// }
+// void beepSmall(){
+//       tone(BUZZZER_PIN, NOTE_C4 , 50);
+// }
+void printDisplayLine(DisplayLine line) {
 
-    std::string isSelectedStart = ">";
-    std::string isSelectedEnd = "";
-    stringstream s("");
-    // s<<"S";
-    if (!line.selected){
-      isSelectedStart = "";
-      isSelectedEnd = "";
+  std::string isSelectedStart = ">";
+  std::string isSelectedEnd = "";
+  stringstream s("");
+  // s<<"S";
+  if (!line.selected) {
+    isSelectedStart = "";
+    isSelectedEnd = "";
+  }
+  s << isSelectedStart;
+  for (int j = 0; j < line.words.size(); j++) {
+    if (j != 0) {
+      s << line.seperator;
     }
-    s<< isSelectedStart;
-    for(int j=0;j<line.words.size();j++){
-      if(j!=0){
-        s<<line.seperator;
-      }
-      for (int k=0;k<line.words[j].marginLeft;k++){
-        s<<" ";
-      }
-      s<<line.words[j].str;
-      for (int k=0;k<line.words[j].marginRight;k++){
-        s<<" ";
-      }
+    for (int k = 0; k < line.words[j].marginLeft; k++) {
+      s << " ";
     }
-    s<<isSelectedEnd;
-    s<<"\n";
-    if(line.bold){
-      printoutBold(s.str());
+    s << line.words[j].str;
+    for (int k = 0; k < line.words[j].marginRight; k++) {
+      s << " ";
+    }
+  }
+
+  if (line.hasFlag){
+    s<<" ";
+    if (line.flagValue){
+      s<<"T";
     }else{
-      printout(s.str());
+      s<<"F";
     }
+  }  
 
+  s << isSelectedEnd;
+  s << "\n";
+
+  if (line.bold) {
+    printoutBold(s.str());
+  } else {
+    printout(s.str());
+  }
+  if (line.isTopBar){
+    
+  }
 };
 
-void printoutBold(std::string str){
+void printoutBold(std::string str) {
 
   display.setTextSize(2);
-  printWithLen(str,11);
+  printWithLen(str, 11);
 }
-void printout(std::string str){
+void printout(std::string str) {
 
   display.setTextSize(1);
-  printWithLen(str,21);
+  printWithLen(str, 21);
 }
-void printWithLen(std::string str, int maxLen){
-  if (str.length()>=maxLen){
+void printWithLen(std::string str, int maxLen) {
+  if (str.length() >= maxLen) {
     display.print(str.c_str());
     return;
   }
-  int diff = maxLen-str.length();
-  if (diff%2==0){
-    for (int i=0;i<diff/2;i++){
+  int diff = maxLen - str.length();
+  if (diff % 2 == 0) {
+    for (int i = 0; i < diff / 2; i++) {
       display.print(" ");
     }
-  }else{
-    for (int i=0;i<diff/2;i++){
+  } else {
+    for (int i = 0; i < diff / 2; i++) {
       display.print(" ");
     }
   }
   display.print(str.c_str());
 }
-void printFlush(){
+void setDisplayDarkMode(bool isDarkMode){
+  display.invertDisplay(!isDarkMode);
+}
+void setDisplayRotation(bool isInverted){
+  int rotation =0;
+  if(isInverted){
+    rotation =2;
+  }
+  display.setRotation(rotation);
+}
+void printFlush() {
   display.display();
 };
-void printDisplay(){
+void printDisplay() {
   printClear();
   printPre();
   DisplayPage str = console->display();
   int maxLines = 4;
-  int len =str.lines.size();
-  if (str.lines.size()>maxLines){
+  int len = str.lines.size();
+  if (str.lines.size() > maxLines) {
     len = maxLines;
   }
   printDisplayLine(str.topbar);
-  for(int i=0;i<len;i++){
+  for (int i = 0; i < len; i++) {
     printDisplayLine(str.lines[i]);
   }
+  setDisplayDarkMode(str.isDarkMode);
+  setDisplayRotation(str.isInverted);
+
   printFlush();
 }
 void loop(void) {
-  rotary_loop(console);
-  printDisplay();
+   rotary_loop(console);
+   printDisplay();
+   console->tick();
+
 }

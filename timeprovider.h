@@ -17,3 +17,11 @@ unsigned long getTimeEpoch() {
   time(&now);
   return now;
 }
+
+unsigned long getUntetheredTimeEpoch(){
+  time_t now;
+  struct tm timeinfo;
+  time(&now);
+  return now;
+
+}
