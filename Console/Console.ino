@@ -151,7 +151,7 @@ void setup(void) {
   displaySetup();
   wifiSetup();
   encoderSetup();
-  // beepSmall();
+  //beepSmall();
 }
 void printClear() {
   display.clearDisplay();
@@ -164,9 +164,9 @@ void printPre() {
 // void beep(){
 //     tone(BUZZZER_PIN, NOTE_C4 , 400);
 // }
-// void beepSmall(){
-//       tone(BUZZZER_PIN, NOTE_C4 , 50);
-// }
+void beepSmall(){
+      tone(BUZZZER_PIN, NOTE_C4 , 50);
+}
 void printDisplayLine(DisplayLine line) {
 
   std::string isSelectedStart = ">";

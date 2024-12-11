@@ -28,7 +28,7 @@ std::string a_string( long value ){
   return std::to_string(value);
 }
 std::string a_string( long long value ){
-  return std::to_string(value);a
+  return std::to_string(value);
 }
 std::string a_string( unsigned value ){
   return std::to_string(value);

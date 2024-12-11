@@ -98,8 +98,8 @@ class DisplayPage {
 public:
   DisplayLine topbar;
   std::vector<DisplayLine> lines = {};
-  bool isDarkMode = false;
-  bool isInverted = false;
+  bool isDarkMode = true;
+  bool isInverted = true;
   DisplayPage(){};
   DisplayPage(std::string str) {
     DisplayWord word = DisplayWord(str);
@@ -350,9 +350,9 @@ private:
   std::string name = "Settings";
   std::vector<std::string> settingParams = { "DrkMd", "24h fmt", "Rotate","back" };
   std::map<std::string, std::string> values = {
-    { "DrkMd", "false" },
+    { "DrkMd", "true" },
     { "24h fmt", "false" },
-    {"Rotate","false"},
+    {"Rotate","true"},
   };
   int selectedIndex = 0;
 
@@ -638,9 +638,9 @@ private:
   int menuIndex = 0;
   std::map<std::string, std::string> consoleValues;
   bool displayOff = false;
-  bool isDarkMode = false;
+  bool isDarkMode = true;
   bool is24HFormat = false;
-  bool isInverted = false;
+  bool isInverted = true;
 
 
 public:
